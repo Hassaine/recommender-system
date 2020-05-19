@@ -7,9 +7,10 @@ import math
 import numpy as np
 
 class BPSO:
-    def __init__(self,df, particule_count=5000,v_max=20, C1=2,C2=2,w_coef=0.4,max_iter=500,n=200):
-
-        self.population = [Particule(n=n,v_max=v_max) for _ in range(particule_count)]
+    def __init__(self,df, particule_count=5000,v_max=20, C1=2,C2=2,w_coef=0.4,max_iter=500,n=200,mesure="confidence"):
+        """":arg mesure='confidence', 'lift','leverage', 'conviction' """
+        self.population = [Particule(n=n,v_max=v_max,mesure=mesure) for _ in range(particule_count)]
+        self.mesure="confidence"
         self.df=df
         self.size=n
         self.v_max=v_max
@@ -43,11 +44,13 @@ class BPSO:
 #                if (p.Vid > self.v_max):
 #                    p.Vid =self.v_max
                 if(random() > self.sigmoid(p.Vid)):
+                    #print("iter = {}, done".format(k))
                     p.Vid=1
                     p.updatePosition(self.df)
                 if ( p.pbestFitness > self.gBestfitness):
                     self.gBest = i
                     self.gBestfitness = p.pbestFitness
+
 
     def hamming_distance(self,p1,p2):
         return ((p1 != p2) == True).sum()
@@ -57,34 +60,42 @@ class BPSO:
 
 
 
+def association_rule_mining(df,particule_count=5000,v_max=20, C1=2,C2=2,w_coef=0.4,max_iter=500,mesure="confidence",m=10):
+    particules=[]
+    i=0
+    while(i<m):
+        instance = BPSO(df=df,n=2*len(df.columns),particule_count=particule_count,max_iter=max_iter,mesure=mesure)
+        instance.run()
+        gbest = instance.getGbest()
+        exist = False
+        for particule in particules:
+            if particule.equal(gbest):
+                exist=True
+                break
+        if not exist:
+            particules.append(gbest)
+            i += 1
+    output = []
+    for particule in particules:
+        particule.getRule(columns=df.columns)
+        if(particule.confidence>0):
+            output.append([particule.premis,particule.conclusion,particule.support,particule.confidence,particule.lift,particule.leverage,particule.conviction])
+        #print(" confidence = {}, support = {} lift = {}, leverage  = {}, conviction = {}".format(particule.confidence,particule.support,particule.lift,particule.leverage,particule.conviction))
+    columns=["antecedents","consequents","support","confidence","lift","leverage","conviction"]
+    output_df = pd.DataFrame(output,columns=columns)
+    return output_df
 
 
 
 if __name__ == '__main__':
 
-    df= pd.read_csv('../../dataSource/market/market.csv')
+    df= pd.read_csv('../../dataSource/market/marketBool.csv')
+    df=df.sample(n=3000, replace=False)
     start_time = time.time()
-    m=10
-    particules=[]
-    i=0
-    while(i<m):
-        instance = BPSO(df=df,n=2*len(df.columns),particule_count=5000,max_iter=5)
-        instance.run()
-        gbest=instance.getGbest()
-        exist=False
-        for particule in particules:
-            if(particule.equal(gbest)):
-                exist=True
-                break
-        if(not exist):
-            particules.append(gbest)
-            i+=1
-
+    output = association_rule_mining(df=df,particule_count=1000,max_iter=10,mesure="lift", m=15)
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    for particule in particules:
-        particule.getRule(columns=df.columns)
-        print(" confiance = {}".format(particule.fitness(df=df)))
-    #gbest = instance.getGbest()
-    #gbest.getRule(columns=df.columns)
-    #print(" confiance = {}".format(gbest.fitness(df=df)))
+     #%%
+    #print(output.to_string())
+    output.to_csv('../../output/dataMining/BPSO_ar.csv',index=False)
+
