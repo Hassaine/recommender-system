@@ -15,3 +15,5 @@ __pycache__/
 *.py[cod]
 
 output/*
+tmp/*
+dashboards/test.py
