@@ -119,16 +119,8 @@ a.article:hover {
 /*
     ADDITIONAL DEMO STYLE, NOT IMPORTANT TO MAKE THINGS WORK BUT TO MAKE IT A BIT NICER :)
 */
-/* #buttonNavcontainer{
-  background-color: transparent;
-}
-.navbar{
- background-color: transparent;
-  position: fixed;
-  z-index: 999;
-
-
-} */
+/* 
+ */
 @import 'https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700';
 
 body {
@@ -220,4 +212,14 @@ a[data-toggle='collapse'] {
   display: block;
   overflow: auto;
   width: 100%;
+}
+
+
+
+#table-exec {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
 }

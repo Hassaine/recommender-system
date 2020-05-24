@@ -4,20 +4,51 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 globalActiveSideBar="active"
 from app import app
-from pages import fp_growth_dash,BPSO_dash
+from pages import fp_growth_dash,BPSO_dash,dm_execution
 
 
 sideBar = html.Nav(
             id='sidebar',
             children=[
                 html.Div(
-                    children=html.H3('DGTL'),
+                    children=html.H3('REC-OPTI'),
                     className='sidebar-header'
                 ),
                 html.Ul(
                     className='list-unstyled components',
+                    
+
                     children=[
-                        html.P('Navigation'),
+                        html.P('Dashboard'),
+                        html.Li(
+                            className='active',
+                            children=[
+                                html.A(
+                                    'Execution',
+                                    href='#homeSubmenu2',
+                                    className = 'dropdown-toggle',
+                                    **{'aria-expanded': 'false', 'data-toggle': 'collapse'}
+                                ),
+                                html.Ul(
+                                    className='collapse list-unstyled',
+                                    id='homeSubmenu2',
+                                    children=[
+                                        html.Li(
+                                            dbc.NavLink(
+                                                'data mining',
+                                                href="/execution/data-mining", 
+                                            )
+                                        ),
+                                        html.Li(
+                                            dbc.NavLink(
+                                                'recommandation',
+                                                href="/execution/recommandation", 
+                                            )
+                                        )                                  
+                                    ]
+                                )
+                            ]
+                        ),
                         html.Li(
                             className='active',
                             children=[
@@ -61,14 +92,7 @@ sideBar = html.Nav(
                                 )
                             ]
                         ),
-                        html.Li(
-                            children=[
-                                html.A(
-                                    'Contact',
-                                    href='#'
-                                )
-                            ]
-                        ),
+                      
                         html.Ul(
                             [html.Li(children=[html.A("download results",href="#",className="download")])],
                             className="list-unstyled CTAs"
@@ -129,8 +153,10 @@ def render_page_content(pathname):
         return html.P("Oh cool, this is page 3!")
     elif pathname == "/about":
         return html.H1("About")
-    elif pathname == "contact":
-        return html.H1('Contact')
+    elif pathname == "/execution/data-mining":
+        return dm_execution.layout
+    elif pathname == "/execution/recommandation":
+        return html.H1('recommandation')
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [

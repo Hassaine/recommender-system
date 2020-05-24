@@ -5,46 +5,27 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import dash_table
 import plotly.graph_objects as go
+import plotly.express as px
 import numpy as np
 from app import app
 df_fp = pd.read_csv('../output/dataMining/FP_Growth_ar.csv')
-def generate_table(dataframe, max_rows=10):
-    return dbc.Table([
-        html.Thead(
-            html.Tr([html.Th(col) for col in dataframe.columns])
-        ),
-        html.Tbody([
-            html.Tr([
-                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
-            ]) for i in range(min(len(dataframe), max_rows))
-        ])
-    ],
-        bordered=True,
-        hover=True,
-    responsive=True,
-    striped=True,
-    size="md",id="dtBasicExample")
-
-
-N = 100
-random_x = np.linspace(0, 1, N)
-random_y0 = np.random.randn(N) + 5
-random_y1 = np.random.randn(N)
-random_y2 = np.random.randn(N) - 5
-
-# Create traces
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=random_x, y=random_y0,
-                    mode='lines',
-                    name='support'))
-fig.add_trace(go.Scatter(x=random_x, y=random_y1,
-                    mode='lines+markers',
-                    name='confiance'))
-fig.update_yaxes(title_text='Time(s)')
-fig.update_xaxes(title_text='Value')
-fig.layout.paper_bgcolor = '#fafafa'
-
-
+df_perf = pd.read_csv('../output/dataMining/FP_Growth_performance.csv')
+# def generate_table(dataframe, max_rows=10):
+#     return dbc.Table([
+#         html.Thead(
+#             html.Tr([html.Th(col) for col in dataframe.columns])
+#         ),
+#         html.Tbody([
+#             html.Tr([
+#                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+#             ]) for i in range(min(len(dataframe), max_rows))
+#         ])
+#     ],
+#         bordered=True,
+#         hover=True,
+#     responsive=True,
+#     striped=True,
+#     size="md",id="dtBasicExample")
 
 
 layout=html.Div(children=[
@@ -59,15 +40,64 @@ layout=html.Div(children=[
             'text-align' : 'center'
 
         },className="mx-auto mt-20")),
-    # dbc.Input(
-    #     id="input_text",
-    #     type="text",
-    #     placeholder="row number",
-    #     value="10"
-    #     ,
-    # ),
+         html.Hr(),
+        dbc.Row([
+            dbc.Col(dbc.Card(
+              [
+                  
+                   dbc.CardBody(
+                    [
+                        html.H4(str(round(df_fp['confidence'].max(),2)), className="card-title"),
+                        html.P("best confidence", className="card-text"),
+                    ]
+                ),
+                
+                    ],color="info", outline=True
+            
+            )),
+            dbc.Col(dbc.Card(
+              [
+                  
+                   dbc.CardBody(
+                    [
+                        html.H4(str(round(df_fp['lift'].max(),2)), className="card-title"),
+                        html.P("best lift", className="card-text"),
+                    ]
+                ),
+                
+                    ],color="info", outline=True
+            
+            )),
+            dbc.Col(dbc.Card(
+              [
+                  
+                   dbc.CardBody(
+                    [
+                        html.H4(str(round(df_fp['leverage'].max(),2)), className="card-title"),
+                        html.P("best leverage", className="card-text"),
+                    ]
+                ),
+                
+                    ],color="info", outline=True
+            
+            )),
+            dbc.Col(dbc.Card(
+              [
+                  
+                   dbc.CardBody(
+                    [
+                        html.H4(str(round(df_fp['conviction'].max(),2)), className="card-title"),
+                        html.P("best conviction", className="card-text"),
+                    ]
+                ),
+                
+                    ],color="info", outline=True
+            
+            ))
+            ]),
 
-      #  html.Div(id="fp_tab")
+            html.Hr(),
+
         html.Div(dash_table.DataTable(
         id='datatable-paging',
         columns=[{"name": i, "id": i} for i in df_fp.columns],
@@ -96,9 +126,56 @@ layout=html.Div(children=[
         'text-align': 'center'
 
     }, className="mx-auto my-20"))
-    ,dbc.Row(dbc.Col(dcc.Graph(figure=fig)))
+    ,
+    dbc.Row([dbc.Col(dbc.Card([
+        dbc.CardHeader(html.H4("Controleur"))
+        ,
+        dbc.CardBody([
+        dbc.FormGroup(
+            [
+                dbc.Label("transaction number"),
+                dcc.Dropdown(
+                    id='transaction',
+                    options=[{'label': i, 'value': i} for i in list(df_perf['transaction_number'].unique())],
+                    value="980",
+                    searchable=False,
+                    clearable=False
+                ),
+            ]
+        ),
+        dbc.FormGroup(
+            [
+                dbc.Label("X variable"),
+                dcc.Dropdown(
+                    id="x-variable",
+                    options=[
+                        {"label": col, "value": col} for col in ["confidence","support"]
+                    ],
+                    value="support",
+                    searchable=False,
+                    clearable=False
 
+                ),
+            ]
+        )])]),width=3),
+        dbc.Col(dcc.Graph(id="line-graph"),width=9)],className="align-items-center")
       ])
+
+
+@app.callback(
+    Output('line-graph', 'figure'),
+    [Input('transaction', 'value'),
+     Input('x-variable', 'value')])
+def update_graph(transaction_number, x_variable):
+
+    fig1 = px.line(x=df_perf[df_perf.transaction_number == int(transaction_number)].groupby(x_variable)[['time']].mean().index.tolist(),
+                   y=df_perf[df_perf.transaction_number == int(transaction_number)].groupby(x_variable)[['time']].mean().values)
+    fig1.update_yaxes(title_text='avrage execution Time(s)')
+    fig1.update_xaxes(title_text=x_variable)
+    fig1.update_layout(xaxis_type="log")
+    fig1.layout.paper_bgcolor = '#fafafa'
+    return fig1
+
 
 #@app.callback(
 #    Output("fp_tab", "children"),
