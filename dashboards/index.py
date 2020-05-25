@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 globalActiveSideBar="active"
 from app import app
-from pages import fp_growth_dash,BPSO_dash,dm_execution
+from pages import fp_growth_dash,BPSO_dash,dm_execution,comparison
 
 
 sideBar = html.Nav(
@@ -150,7 +150,7 @@ def render_page_content(pathname):
     elif pathname == "/performance/bpso":
         return BPSO_dash.layout
     elif pathname == "/performance/comparison":
-        return html.P("Oh cool, this is page 3!")
+        return comparison.layout
     elif pathname == "/about":
         return html.H1("About")
     elif pathname == "/execution/data-mining":

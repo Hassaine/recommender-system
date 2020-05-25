@@ -5,8 +5,24 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import dash_table
 from app import app
+import plotly.graph_objects as go
+import plotly.express as px
+import numpy as np
+import plotly.figure_factory as ff
 df_bpso = pd.read_csv('../output/dataMining/BPSO_ar.csv')
 
+
+df_perf = pd.read_csv('../output/dataMining/BPSO_performance.csv')
+
+
+# fig3=px.scatter(df_perf, x="particule_count", y="time", color="transaction_number", marginal_y="violin",
+#             trendline="ols")
+# fig3.layout.paper_bgcolor = '#fafafa'  
+fig4 = px.scatter(df_perf, x="transaction_number", y="time", size="avg_lift", color="particule_count",
+           hover_name="particule_count", log_x=True, size_max=60)
+fig4.layout.paper_bgcolor = '#fafafa'     
+
+   
 
 layout=html.Div(children=[
         dbc.Row(html.H1('Binary Particle Swarm Optimization',style={
@@ -101,5 +117,137 @@ layout=html.Div(children=[
         'fontWeight': 'bold'
         }
     )),
+    html.Hr(),
+    dbc.Row(id="line-graph-title"),
+    dbc.Row([dbc.Col(dbc.Card([
+        dbc.CardHeader(html.H4("Controleur"))
+        ,
+        dbc.CardBody([
+        dbc.FormGroup(
+            [
+                dbc.Label("Y variable"),
+                dcc.Dropdown(
+                    id='y-variable',
+                    options=[{'label': i, 'value': i} for i in ['time','avg_confidence','avg_lift','avg_leverage','avg_conviction']],
+                    value="time",
+                    searchable=False,
+                    clearable=False
+                ),
+            ]
+        ),
+        dbc.FormGroup(
+            [
+                dbc.Label("X variable"),
+                dcc.Dropdown(
+                    id="x-variable",
+                    options=[
+                        {"label": col, "value": col} for col in ["particule_count","max_iter","transaction_number"]
+                    ],
+                    value="particule_count",
+                    searchable=False,
+                    clearable=False
+
+                ),
+            ]
+        )])]),width=3),
+        dbc.Col(dcc.Graph(id="line-graph-1"),width=9)],className="align-items-center"),
+         html.Hr(),
+        dbc.Row(html.H2("Mesure value distribution chart",className="mx-auto mt-20")),
+
+        dbc.Row([dbc.Col(dbc.Card([
+        dbc.CardHeader(html.H4("Controleur"))
+        ,
+        dbc.CardBody([
+        dbc.FormGroup(
+            [
+                dbc.Label("mesure"),
+                dcc.Dropdown(
+                    id='dist-variable',
+                    options=[{'label': i, 'value': i} for i in ['avg_confidence','avg_lift','avg_conviction']],
+                    value="avg_confidence",
+                    searchable=False,
+                    clearable=False
+                ),
+            ]
+        ),])]),width=3),
+        dbc.Col(dcc.Graph(id="dist-graph-1"),width=9)],className="align-items-center"),
+        html.Hr(),
+
+        dbc.Row(html.H2("multi-varibales scatter plot",className="mx-auto mt-20")),
+
+        dbc.Row([dbc.Col(dbc.Card([
+        dbc.CardHeader(html.H4("Controleur"))
+        ,
+        dbc.CardBody([
+        dbc.FormGroup(
+            [
+                dbc.Label("mesure"),
+                dcc.Dropdown(
+                    id='dist-variable-2',
+                    options=[{'label': i, 'value': i} for i in ['time','avg_confidence','avg_lift','avg_conviction']],
+                    value="time",
+                    searchable=False,
+                    clearable=False
+                ),
+            ]
+        ),])]),width=3),
+            dbc.Col(dcc.Graph(id="dist-graph-2"),width=9)],className="align-items-center"),
+               html.Hr(),
+              dbc.Row(
+            dbc.Col(dcc.Graph(id="dist-graph-3",figure=fig4),width=12),className="align-items-center")
+        
 
       ])
+
+
+@app.callback(
+    [Output('line-graph-1', 'figure'),
+    Output('line-graph-title','children')],
+    [Input('x-variable', 'value'),
+     Input('y-variable', 'value')])
+def update_graph(x_variable,y_variable):
+    fig1 = px.line(x=df_perf.groupby(x_variable)[[y_variable]].mean().index.tolist(),
+                   y=df_perf.groupby(x_variable)[[y_variable]].mean().values)
+    title=html.H2('Line chart of excution time by {} and {}'.format(x_variable,y_variable), style={'text-align': 'center' }, className="mx-auto my-20")
+    if(y_variable=='time'):
+        y_variable+=" (s)"
+    fig1.update_yaxes(title_text=y_variable)
+    fig1.update_xaxes(title_text=x_variable)      
+    fig1.layout.paper_bgcolor = '#fafafa'
+    return [fig1,title]
+
+
+@app.callback(
+    Output('dist-graph-1', 'figure'),
+    [Input('dist-variable', 'value')])
+def update_graph_dist(dist_var):
+    bin_size=0.1
+    if(dist_var=="avg_lift"):
+        bin_size=5
+    
+    fig2 = ff.create_distplot([df_perf[dist_var].tolist()], [dist_var],bin_size=bin_size,colors=['rgb(0, 0, 100)'])
+    if(dist_var=="avg_lift"):
+        fig2['layout']['xaxis'].update(range=[0, 60], autorange=False)  
+       
+    fig2.layout.paper_bgcolor = '#fafafa'
+    return fig2
+
+
+@app.callback(
+    Output('dist-graph-2', 'figure'),
+    [Input('dist-variable-2', 'value')])
+def update_graph_dist_2(dist_var):
+
+    fig3=px.scatter(df_perf, x="particule_count", y=dist_var, color="transaction_number", marginal_y="violin",
+            trendline="ols")
+    fig3.layout.paper_bgcolor = '#fafafa'     
+    if(dist_var=="avg_lift"):
+        #fig3.layout.yaxis.update(range=[0, 25])
+        
+        fig3['layout']['yaxis'].update(range=[-10, 60], autorange=False)    
+        
+    return fig3
+
+
+
+

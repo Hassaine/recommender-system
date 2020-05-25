@@ -27,6 +27,8 @@ df_perf = pd.read_csv('../output/dataMining/FP_Growth_performance.csv')
 #     striped=True,
 #     size="md",id="dtBasicExample")
 
+fig2 = px.scatter(df_perf, x="support", y="time", color="confidence",color_continuous_scale=px.colors.sequential.Viridis,log_x=True, render_mode="webgl")
+fig2.layout.paper_bgcolor = '#fafafa'
 
 layout=html.Div(children=[
         dbc.Row(html.H1('FP-growth',style={
@@ -158,7 +160,10 @@ layout=html.Div(children=[
                 ),
             ]
         )])]),width=3),
-        dbc.Col(dcc.Graph(id="line-graph"),width=9)],className="align-items-center")
+        dbc.Col(dcc.Graph(id="line-graph"),width=9)],className="align-items-center"),
+        html.Hr(),
+          dbc.Row(html.H2("Multi-Varibales scatter plot",className="mx-auto mt-20")),
+        dbc.Row(dbc.Col(dcc.Graph(figure=fig2)))
       ])
 
 
