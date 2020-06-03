@@ -3,7 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import datetime
-
+import os,json
 import pandas as pd
 import dash_table
 from app import app
@@ -50,20 +50,21 @@ layout = html.Div(children=[
                         dbc.Row(dbc.Col([dbc.Label("algorithm-selector",className="mx-auto mt-40"),
                                     dcc.Dropdown(
                                         id='algorithm-selector',
-                                        options=[{'label': i, 'value': i} for i in ['fp-Growth','BPSO']],
+                                        options=[{'label': i, 'value': i} for i in ['fp-Growth','BPSO','parallel-fp-growth']],
                                         value="fp-Growth",
                                         searchable=False,
                                         clearable=False
                                     ),]),className="my-auto"),
-                        dbc.Row([
-                            dbc.Col(dbc.Label('mesure :')),
-                            dbc.Col( dcc.Dropdown(
+                        dbc.Row([dbc.Col(dbc.Label('mesure :')),
+                                 dbc.Col( dcc.Dropdown(
                                         id='mesure-selector',
                                         options=[{'label': i, 'value': i} for i in ['confidence','lift','leverage','conviction']],
                                         value="confidence",
                                         searchable=False,
                                         clearable=False
-                                    )),
+                                    ))]),
+                        dbc.Row([
+ 
                             dbc.Col( dbc.Input(
                                 id="input_max_iter",
                                 type='text',
@@ -91,14 +92,14 @@ layout = html.Div(children=[
                                 id="input_support",
                                 type='text',
                                 placeholder="support",
-                                value="0.01"
+                                
                             )
                             ),
                             dbc.Col( dbc.Input(
                                 id="input_confidence",
                                 type='text',
                                 placeholder="confidence",
-                                value="0.01"
+                                
                             ))],id="fp-growth-params"),
                             dbc.Row(dbc.Col(html.Hr())),
                              ]
@@ -131,7 +132,7 @@ layout = html.Div(children=[
 def show_hide_element(visibility_state):
     if visibility_state == 'BPSO':
         return [{'display': 'none'},{'display': 'block'}]
-    if visibility_state == 'fp-Growth':
+    if visibility_state == 'fp-Growth' or visibility_state =="parallel-fp-growth":
         return [{'display': 'block'},{'display': 'none'}]
 
 
@@ -140,20 +141,43 @@ def show_hide_element(visibility_state):
 
 
 
-def parse_contents(contents, filename, date,confidence,support,particule_number,m,max_iter,algo,mesure):
+def parse_contents(contents, filename, date,support,confidence,particule_number,m,max_iter,algo,mesure):
     content_type, content_string = contents.split(',')
 
     decoded = base64.b64decode(content_string)
     try:
+        if 'txt' in filename:
+            file=open('..\\dataSource\\{}'.format(filename),'w')
+            file.write(decoded.decode('utf-8'))
+            file.close()
+            
+            if(algo=="parallel-fp-growth"):
+                curentDir =os.getcwd()
+                os.chdir('../largeScale/parallelFp_growth')
+
+                dataConfig={'support':float(support),'confidence':float(confidence),'input':"..\\..\\dataSource\\{}".format(filename),
+                                'output' :"..\\..\\output\\dataMining\\parallel-fp-growth_ar_test.csv"}
+                with open('configuration.json', 'w') as outfile: 
+                    json.dump(dataConfig, outfile)  
+                os.system('%SPARK_HOME%/bin/pyspark < fp_growth.py')
+                os.chdir(curentDir)
+                df = pd.read_csv('../output/dataMining/{}_ar_test.csv'.format(algo))
+            
+            #
+
+            
+
         if 'csv' in filename:
             # Assume that the user uploaded a CSV file
             data = pd.read_csv(
                 io.StringIO(decoded.decode('utf-8')))
             if(algo=="fp-Growth"):
+                print("confidence : {}".format(float(confidence)))
                 df_tmp = Fp_Growth.fp_growth(data,confidence=float(confidence),support=float(support))
-            else:
+            elif(algo=="BPSO"):
                 df_tmp = BPSO.association_rule_mining(df=data,particule_count=int(particule_number),max_iter=int(max_iter),mesure=mesure, m=int(m))
-            
+           
+
             df_tmp.to_csv('../output/dataMining/{}_ar_test.csv'.format(algo),index=False)
             df = pd.read_csv('../output/dataMining/{}_ar_test.csv'.format(algo))
         elif 'xls' in filename:

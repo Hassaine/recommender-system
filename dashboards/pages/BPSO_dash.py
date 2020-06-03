@@ -2,13 +2,15 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-import pandas as pd
+import dash_daq as daq
 import dash_table
+import pandas as pd
 from app import app
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 import plotly.figure_factory as ff
+
 df_bpso = pd.read_csv('../output/dataMining/BPSO_ar.csv')
 
 
@@ -38,15 +40,24 @@ layout=html.Div(children=[
         },className="mx-auto mt-20")),
          html.Hr(),
         dbc.Row([
-            dbc.Col(dbc.Card(
+            dbc.Col(
+                dbc.Card(
               [
                   
                    dbc.CardBody(
                     [
+                        # daq.LEDDisplay(
+                        #     label="best confidence",
+                        #     labelPosition="bottom",
+                        #     value=str(round(df_bpso['confidence'].max(),)+0.01),
+                        #     color="#000",
+                        #     backgroundColor = "#fafafa"
+                            
+                        # ),
                         html.H4(str(round(df_bpso['confidence'].max(),2)), className="card-title"),
-                        html.P("best confidence", className="card-text"),
+                       html.P("best confidence", className="card-text"),
                     ]
-                ),
+                 ),
                 
                     ],color="info", outline=True
             
