@@ -1,4 +1,32 @@
 import dash
+import pandas as pd
+import os,sys,inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+#print(currentdir)
+parentdir = os.path.dirname(currentdir)
+#parentdir = os.path.dirname(parentdir)
+#os.chdir(currentdir)
+# sys.path.append(parentdir)
+sys.path.append(parentdir+"\\evaluation")
+sys.path.append(parentdir+"\\dataLoader")
+#print(sys.path)
+
+from Evaluator import Evaluator
+from MovieLens import MovieLens
+
+def LoadMovieLensData():
+    ml = MovieLens()
+    print("Loading movie ratings...")
+    data = ml.loadMovieLensLatestSmall()
+    print("\nComputing movie popularity ranks so we can measure novelty later...")
+    rankings = ml.getPopularityRanks()
+    return (ml,data, rankings)
+# Load up common data set for the recommender algorithms
+(ml, evaluationData, rankings) = LoadMovieLensData()
+evaluator = Evaluator(evaluationData, rankings,doTopN=False)
+
+
 external_stylesheets = [
     {
         'href': 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css',
@@ -38,6 +66,9 @@ external_scripts = [
         "src":"https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"
     }
 ]
+
+df_movies = pd.read_csv('../dataSource/moviesLen/movies.csv')
+df_rating = pd.read_csv('../dataSource/moviesLen/ratings.csv')
 app = dash.Dash(__name__, external_scripts=external_scripts,
     external_stylesheets=external_stylesheets,suppress_callback_exceptions=True)
 server = app.server

@@ -17,3 +17,6 @@ __pycache__/
 output/*
 tmp/*
 dashboards/test.py
+
+
+savedModels/*

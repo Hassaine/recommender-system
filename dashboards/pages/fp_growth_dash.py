@@ -121,7 +121,7 @@ layout=html.Div(children=[
         'backgroundColor': 'rgb(230, 230, 230)',
         'fontWeight': 'bold'
         }
-    ),className="container"),
+    )),
     html.Hr(),
 
     dbc.Row(html.H2('line chart of excution time by confidence and support', style={

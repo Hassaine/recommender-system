@@ -63,11 +63,12 @@ def LoadAmazonData():
 
 evaluator = Evaluator(evaluationData,rankings,doTopN=True)
 
-SVDAlgorithm = SVD()
-evaluator.AddAlgorithm(SVDAlgorithm, "SVD")
+SVDAlgorithm = SVDpp()
+evaluator.AddAlgorithm(SVDAlgorithm, "SVD++")
 #SVDppAlgorithm = SVDpp()
 #evaluator.AddAlgorithm(SVDppAlgorithm, "SVD++")
 evaluator.Evaluate()
+
 #evaluator.SampleTopNRecs(ml)
 
 
@@ -84,17 +85,19 @@ evaluator.Evaluate()
 
 
 # Retrieve the trainset.
-trainset = evaluationData.build_full_trainset()
+#trainset = evaluationData.build_full_trainset()
 
 # Build an algorithm, and train it.
-algo = KNNBasic()
-algo.fit(trainset)
-uid = "A3FANY5GOT5X0W"
-iid = "0176496920"
-#uid = "83"
-#iid = "31"
-
-
+#algo = KNNBasic()
+#algo.fit(trainset)
+#uid = "A3FANY5GOT5X0W"
+#iid = "0176496920"
+uid = "83"
+iid = "31"
+ #%%
+evaluator.SampleTopNRecs(ml=ml)
+##pred=SVDAlgorithm.predict( )
+#print(pred)
 # get a prediction for specific users and items.
-pred = algo.predict(uid, iid, r_ui=4, verbose=True)
-print(pred)
+#pred = algo.predict(uid, iid, r_ui=4, verbose=True)
+#print(pred)

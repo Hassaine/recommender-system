@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 globalActiveSideBar="active"
 from app import app
-from pages import fp_growth_dash,BPSO_dash,dm_execution,comparison
+from pages import fp_growth_dash,BPSO_dash,dm_execution,comparison,home,recommandation
 
 
 sideBar = html.Nav(
@@ -33,6 +33,12 @@ sideBar = html.Nav(
                                     className='collapse list-unstyled',
                                     id='homeSubmenu2',
                                     children=[
+                                        html.Li(
+                                            dbc.NavLink(
+                                                'home',
+                                                href="/", 
+                                            )
+                                        ),
                                         html.Li(
                                             dbc.NavLink(
                                                 'data mining',
@@ -74,9 +80,16 @@ sideBar = html.Nav(
                                                 href="/performance/bpso", id="page-2-link"
                                             )
                                         ),
+
                                         html.Li(
                                             dbc.NavLink(
-                                                'comparison',
+                                                'Recommandation',
+                                                href="/performance/recommandation", id="page-4-link"
+                                            )
+                                        ),
+                                        html.Li(
+                                            dbc.NavLink(
+                                                'Comparison',
                                                 href="/performance/comparison", id="page-3-link"
                                             )
                                         ),
@@ -145,7 +158,9 @@ def clicks(n_clicks):
 
 @app.callback(Output("content-page", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
-    if pathname in ["/", "/performance/fp-growth"]:
+    if pathname == "/":
+        return home.layout
+    elif pathname ==  "/performance/fp-growth":
         return  fp_growth_dash.layout
     elif pathname == "/performance/bpso":
         return BPSO_dash.layout
@@ -156,7 +171,7 @@ def render_page_content(pathname):
     elif pathname == "/execution/data-mining":
         return dm_execution.layout
     elif pathname == "/execution/recommandation":
-        return html.H1('recommandation')
+        return recommandation.layout
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [

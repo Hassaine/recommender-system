@@ -4,8 +4,8 @@ Created on Thu May  3 10:45:33 2018
 
 @author: hassaine
 """
-from evaluation.RecommenderMetrics import RecommenderMetrics
-from evaluation.EvaluationData import EvaluationData
+from RecommenderMetrics import RecommenderMetrics
+from EvaluationData import EvaluationData
 
 class EvaluatedAlgorithm:
     

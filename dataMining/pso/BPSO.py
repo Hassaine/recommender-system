@@ -31,6 +31,8 @@ class BPSO:
         for i  in range(0,particule_count):
             p = self.population[i]
             p.pbestFitness=p.fitness(df=df,postion=False)
+            print(p.pbestFitness)
+
 
             if(p.pbestFitness > self.gBestfitness):
                 self.gBest=i
@@ -40,8 +42,10 @@ class BPSO:
         return self.population[self.gBest]
     def run(self):
         for k in range(self.max_iter):
-            #print("itiration :{}".format(k))
+
+            print("itiration :{}".format(k))
             for i in range(self.particule_count):
+                print("partiucle : {}".format(i))
                 p = self.population[i]
                 vid=p.Vid
                 p.Vid=self.w_coef * vid + self.C1 * self.r1 * self.hamming_distance(p.pBest,p.position) + self.C2 * self.r2 * self.hamming_distance(self.getGbest().pBest,p.position)
@@ -53,8 +57,10 @@ class BPSO:
                     p.Vid=1
                     p.updatePosition(self.df)
                 if ( p.pbestFitness > self.gBestfitness):
+                    changed=True
                     self.gBest = i
                     self.gBestfitness = p.pbestFitness
+
 
 
     def hamming_distance(self,p1,p2):
@@ -93,25 +99,28 @@ def association_rule_mining(df,particule_count=5000,v_max=20, C1=2,C2=2,w_coef=0
 
 
 if __name__ == '__main__':
-    colomns = ['time','transaction_number','max_iter','particule_count','avg_support', 'avg_confidence','avg_lift','avg_leverage','avg_conviction']
-    result = []
-    df= pd.read_csv('../../dataSource/market/marketBool.csv')
-    particule_counts=[100,200,300,500,1000]
-    max_iters=[1,3,5,10]
-    transNumber = [_ for _ in range(980, 10000, 980)]
-    for trans in transNumber:
-        df_tmp = df.sample(n=trans, replace=False)
-        for max_iter in max_iters:
-            for particule_count in particule_counts:
-                start_time = time.time()
-                output = association_rule_mining(df=df_tmp,particule_count=particule_count,max_iter=max_iter,mesure="lift", m=10)
-                endingTime = (time.time() - start_time)
-                print("{},{},{},{}".format(trans,max_iter,particule_count,endingTime))
-                result.append([endingTime,trans,max_iter,particule_count,output['support'].mean(),output['confidence'].mean(),output['lift'].mean(),output['leverage'].mean(),output['conviction'].mean()])
+    # colomns = ['time','transaction_number','max_iter','particule_count','avg_support', 'avg_confidence','avg_lift','avg_leverage','avg_conviction']
+    # result = []
+    # df= pd.read_csv('../../dataSource/market/marketBool.csv')
+    # particule_counts=[100,200,300,500,1000]
+    # max_iters=[1,3,5,10]
+    # transNumber = [_ for _ in range(980, 10000, 980)]
+    # for trans in transNumber:
+    #     df_tmp = df.sample(n=trans, replace=False)
+    #     for max_iter in max_iters:
+    #         for particule_count in particule_counts:
+    #             start_time = time.time()
+    #             output = association_rule_mining(df=df_tmp,particule_count=particule_count,max_iter=max_iter,mesure="lift", m=10)
+    #             endingTime = (time.time() - start_time)
+    #             print("{},{},{},{}".format(trans,max_iter,particule_count,endingTime))
+    #             result.append([endingTime,trans,max_iter,particule_count,output['support'].mean(),output['confidence'].mean(),output['lift'].mean(),output['leverage'].mean(),output['conviction'].mean()])
 
-    output = pd.DataFrame(result, columns=colomns)
-    output.to_csv('../../output/dataMining/BPSO_performance.csv', index=False)
+    # output = pd.DataFrame(result, columns=colomns)
+    # output.to_csv('../../output/dataMining/BPSO_performance.csv', index=False)
+    df= pd.read_csv('../../dataSource/moviesLen/ratingBool.csv')
+    output=association_rule_mining(df=df,particule_count=2000,max_iter=1,mesure="confidence", m=1)
 
-    #print(output.to_string())
+
+    print(output.to_string())
     #output.to_csv('../../output/dataMining/BPSO_ar.csv',index=False)
 

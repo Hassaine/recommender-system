@@ -223,3 +223,51 @@ a[data-toggle='collapse'] {
   width: 100%;
 
 }
+
+#table-rating {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
+}
+
+#table-movies {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
+}
+
+#datatable-movies-result {
+
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
+}
+
+#datatable-movies-rated {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+}
+
+#table-ra {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
+}
+
+#table-rating-2 {
+  table-layout: fixed;
+  display: block;
+  overflow: auto;
+  width: 100%;
+
+}

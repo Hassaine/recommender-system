@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May  3 10:48:02 2018
-
-@author: Frank
-"""
 from surprise.model_selection import train_test_split
 from surprise.model_selection import LeaveOneOut
 from surprise import KNNBaseline
@@ -14,7 +8,9 @@ class EvaluationData:
         
         self.rankings = popularityRankings
         self.data=data
-        
+        self.fullTrainSet = data.build_full_trainset()
+            # And build an anti-test-set for building predictions
+        self.fullAntiTestSet = self.fullTrainSet.build_anti_testset()
 
 
         
@@ -26,9 +22,7 @@ class EvaluationData:
 
         if (doTopN):
             # Build a full training set for evaluating overall properties
-            self.fullTrainSet = data.build_full_trainset()
-            # And build an anti-test-set for building predictions
-            self.fullAntiTestSet = self.fullTrainSet.build_anti_testset()
+
 
             # Build a "leave one out" train/test split for evaluating top-N recommenders
             LOOCV = LeaveOneOut(n_splits=1, random_state=1)

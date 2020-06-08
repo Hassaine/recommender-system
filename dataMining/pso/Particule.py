@@ -6,9 +6,10 @@ import math
 class Particule:
 
     def __init__(self,n,v_max,mesure):
+        print('p')
         self.mesure=mesure
         self.size=n
-        self.position =  np.random.choice(2,n,p=[0.98, 0.02]) # scince 2% of our data is 1 in the dataset this can depend on the data
+        self.position =  np.random.choice(2,n,p=[0.7, 0.3]) # scince 2% of our data is 1 in the dataset this can depend on the data
         # if you are using some small dataset with a lot of 1 then you may use  diffrent parameter for the p
         self.pBest = self.position
         self.Vid = randint(0,v_max)

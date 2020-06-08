@@ -124,7 +124,9 @@ layout=html.Div(children=[
         }
         ],
         style_header={
-        'backgroundColor': 'rgb(230, 230, 230)',
+          "backgroundColor": "rgb(25, 161, 185)",
+        "color": "white",
+        "textAlign": "center",
         'fontWeight': 'bold'
         }
     )),
