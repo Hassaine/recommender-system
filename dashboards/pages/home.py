@@ -82,10 +82,12 @@ layout = html.Div(children=[
             page_action="native",
             page_current= 0,
             page_size= 10,
+            style_cell={'textAlign': 'left'},
             style_data_conditional=[
             {
                 'if': {'row_index': 'odd'},
                 'backgroundColor': 'rgb(248, 248, 248)'
+                
             }
             ],
             style_header={

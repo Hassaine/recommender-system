@@ -2,14 +2,15 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output,State
 import dash_bootstrap_components as dbc
-
+from collections import defaultdict
 import dash_daq as daq
 import dash_table
 import pandas as pd
 from app import app,df_movies,evaluator,df_rating
 import os,sys,inspect
 import pickle
-
+from imdb import IMDb
+ia = IMDb()
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 #print(currentdir)
 parentdir = os.path.dirname(currentdir)
@@ -21,6 +22,9 @@ sys.path.append(parentdir+"\\algorithms")
 
 from HybridAlgorithm import HybridAlgorithm
 from RBMAlgorithm import RBMAlgorithm
+
+
+df_links = pd.read_csv('../dataSource/moviesLen/newLinks.csv')
 
 def recommande(userId=85,algorithm='FC',n=10):
   recommendations=[]
@@ -86,7 +90,13 @@ layout=html.Div(children=[
             type="default"),
       html.Hr(),
    dbc.Row(html.H2('Movies recommended for the user',className="mx-auto mt-20")),
-       dcc.Loading(   html.Div(id="movies-output"), type="default")
+   dcc.Loading(html.Div(id="movies-output"), type="default"),
+   html.Hr(),
+  dbc.Row(html.Div(
+      html.Div(
+      dbc.Button("show Poster", color="primary", className="mr-1",id="show-poster"),className="col-sm-10"),
+    className="form-group row")),
+   html.Div(id="movies-poster")
 ])
 
 
@@ -94,7 +104,9 @@ layout=html.Div(children=[
 
 @app.callback(
    [Output(component_id='movies-rated', component_property='children'),
-   Output(component_id='movies-output', component_property='children')],
+   Output(component_id='movies-output', component_property='children'),
+  # Output(component_id='movies-poster', component_property='children')
+   ],
    [Input(component_id='submit-rec', component_property='n_clicks')],
    [         State('algorithm-selector-fc', 'value'),
                State('userId', 'value'),
@@ -105,17 +117,22 @@ def recommandeMovies(n_clicks,algo,userId,context):
 
  
   if(n_clicks==None):
-    return ["No movies","No recommandation"]
+    return ["No movies","No recommandation"]#,"No recommandation"]
   
   
   movies= recommande(userId=userId,algorithm=algo)
   df_recommended_movies = pd.DataFrame(movies, columns =['movieId', 'estimatedRating'])
+  
+  #tmp_links=df_recommended_movies.set_index('movieId').join(df_links.set_index('movieId'))
+
+
   #df_recommended_movies=df_recommended_movies.join(df_movies,on="movieId")
   df_recommended_movies=df_recommended_movies.set_index('movieId').join(df_movies.set_index('movieId'))
 
-
+  
   df_rated=df_movies[df_movies.movieId.isin(df_rating[df_rating.userId==int(userId)]['movieId'].values)]
   return[
+   
     dash_table.DataTable(
         id="datatable-movies-rated",
         columns=[{"name": i, "id": i} for i in df_rated.columns],
@@ -163,11 +180,69 @@ def recommandeMovies(n_clicks,algo,userId,context):
         "textAlign": "center",
         'fontWeight': 'bold'
         }
-    )
+    ),
+    #html.H1('hello world')
+
+    #  dbc.Row([dbc.Col(dbc.Card(
+    # dbc.CardBody(
+    #     [
+            
+    #         #html.H6("imdb id={}".format(tmp_links.loc[movie[0],'imdbId']), className="card-subtitle"),
+
+    #        #dbc.CardImg(src=tmp_links.loc[movie[0],'poster_url'], top=True),
+    #        dbc.CardImg(src=ia.get_movie(tmp_links.loc[movie[0],'imdbId'])['full-size cover url'], top=True),
+    #        dbc.CardImgOverlay([ 
+    #          html.H3(dbc.Badge("8.1 imdb",color="warning"), className="card-title"),
+    #          dbc.CardLink("Card link", href="#"),
+    #         dbc.CardLink("External link", href="https://google.com"),
+    #         ])
+           
+    #     ]
+    # ),
+    # style={"width": "18rem"},className="text-white"
+    #   )) for movie in movies[:2]])
     
     ]
   
-#     if visibility_state == 'BPSO':
-#         return [{'display': 'none'},{'display': 'block'}]
-#     if visibility_state == 'fp-Growth' or visibility_state =="parallel-fp-growth":
-#         return [{'display': 'block'},{'display': 'none'}]
+
+
+@app.callback(
+   Output(component_id='movies-poster', component_property='children'),
+   [Input(component_id='show-poster', component_property='n_clicks')],
+   [ State('userId', 'value'), State('algorithm-selector-fc', 'value') ])
+
+def showPoster(n_clicks,userId,algo):
+  if(n_clicks==None):
+      return ["No movies"]
+  
+  #print(userId)
+  movies= recommande(userId=userId,algorithm=algo)
+
+  
+  df_recommended_movies = pd.DataFrame(movies, columns =['movieId', 'estimatedRating'])
+  #print(movies)
+
+  
+  tmp_links=df_recommended_movies.set_index('movieId').join(df_links.set_index('movieId'))
+  # dictMovies=defaultdict(dict)
+  # for movie in movies:
+  #   movieMatrix=ia.get_movie(tmp_links.loc[movie[0],'imdbId'])
+  #   dictMovies[movie[0]]={'full-size cover url':movieMatrix['full-size cover url'],"rating":movieMatrix['rating']}
+    
+  return dbc.Row([dbc.Col(dbc.Card(
+    dbc.CardBody(
+        [
+            
+            #html.H6("imdb id={}".format(tmp_links.loc[movie[0],'imdbId']), className="card-subtitle"),
+
+           #dbc.CardImg(src=tmp_links.loc[movie[0],'poster_url'], top=True),
+           dbc.CardImg(src=tmp_links.loc[movie[0],'img_url'], top=True),
+           dbc.CardImgOverlay([ 
+             html.H3(dbc.Badge("{} imdb".format(tmp_links.loc[movie[0],'imdb_rating']),color="warning"), className="card-title")
+            ])
+           
+        ]
+    ),
+    style={"width": "18rem"},className="text-white"
+      )) for movie in movies])
+

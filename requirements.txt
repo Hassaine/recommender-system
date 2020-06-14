@@ -1,0 +1,17 @@
+dash_html_components==1.0.3
+mlxtend==0.17.2
+dash_core_components==1.10.0
+scikit_surprise==1.1.0
+tensorflow==2.2.0
+pandas==0.23.4
+dash_daq==0.5.0
+pyorbital==1.5.0
+dash_table==4.7.0
+dash_bootstrap_components==0.10.0
+dash==1.12.0
+plotly==4.7.1
+pyspark==2.3.0
+IMDbPY==6.8
+numpy==1.18.5
+pyspark==2.4.6
+surprise==0.1
